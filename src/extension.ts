@@ -73,6 +73,12 @@ const get_variables_to_be_used = async (variables_str: string) => {
 
 };
 
+const get_function_description = async () => {
+
+	const user_input = (await vscode.window.showInputBox({ prompt: 'Name of Variable to Show on Comment Block' })) ?? '';
+	return user_input;
+};
+
 const full_justify_text = (text: string, offset: number, text_ending: string, text_start: string, max_length_deduct: number) => {
 	const words = text.split(' ');
 	let formatted_text = '';
@@ -118,12 +124,20 @@ const format_variables = (variables: [string, string][]) => {
 	var formatted_text: string = '';
 	for (const [index, [variable_name, variable_description]] of variables.entries()) {
 
-		formatted_text += (index === 0) ? full_justify_text(variable_name, 0, '  //', '', 0) : full_justify_text(variable_name, 23, '  //', '//', 1);
+		formatted_text += (index === 0) ? full_justify_text(variable_name, 0, '  //', '', 0) : full_justify_text(variable_name, 21, '  //', '//', 0);
 		formatted_text += full_justify_text(variable_description, 24, ' //', '//', 1);
 
 	}
 
 	return formatted_text;
+};
+
+const format_description = (description_template: string, user_description: string) => {
+
+	var formatted_text = full_justify_text(user_description, 21, '   //', '//', 0);
+	formatted_text = description_template + formatted_text.slice(description_template.length);
+	return formatted_text;
+
 };
 
 // This method is called when your extension is activated
@@ -153,17 +167,20 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			const raw_function_arguments = function_arguments_extract(line);
 			const variables_and_descriptions: [string, string][] = await get_variables_to_be_used(raw_function_arguments);
+			const user_description = await get_function_description();
 
 			// Format Final Comment Block
 			const template_footer_and_header = '// ********************************************************** //';
 			const template_method_name = '// Method name:        ';
-			const template_method_description = '// Method description: '
-			const template_input_params = '// Input params:       '
-			const template_output_params = '// Output params:       '
+			const template_method_description = '// Method description: ';
+			const template_input_params = '// Input params:       ';
+			const template_output_params = '// Output params:       ';
 			var comment_block: string = '';
 
 			comment_block += template_footer_and_header + '\n';
-			comment_block += template_method_name + function_name + '//\n'
+			// comment_block += template_method_name + function_name + '//\n';
+			comment_block += template_method_name + full_justify_text(function_name, 0, '  //', '', 0);
+			comment_block += format_description(template_method_description, user_description);
 			comment_block += template_input_params + format_variables(variables_and_descriptions);
 			console.log(comment_block);
 		}
