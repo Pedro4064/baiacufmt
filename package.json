@@ -2,6 +2,7 @@
   "name": "baiacufmt",
   "displayName": "BaiacuFmt",
   "description": "",
+  "icon": "imgs/baiacu.jpg",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.87.0"
@@ -14,8 +15,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "baiacufmt.helloWorld",
-        "title": "Hello World"
+        "command": "baiacufmt.function_header",
+        "title": "Create Function Header"
       }
     ]
   },

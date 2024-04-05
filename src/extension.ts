@@ -75,7 +75,7 @@ const get_variables_to_be_used = async (variables_str: string) => {
 
 const get_function_description = async () => {
 
-	const user_input = (await vscode.window.showInputBox({ prompt: 'Name of Variable to Show on Comment Block' })) ?? '';
+	const user_input = (await vscode.window.showInputBox({ prompt: 'Description of the Function' })) ?? '';
 	return user_input;
 };
 
@@ -146,12 +146,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "baiacufmt" is now active!');
+	console.log('ENTROU!!!');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('baiacufmt.helloWorld', async () => {
+	let disposable = vscode.commands.registerCommand('baiacufmt.function_header', async () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		const editor = vscode.window.activeTextEditor;
@@ -165,16 +165,17 @@ export async function activate(context: vscode.ExtensionContext) {
 			const return_type = return_type_extract(line);
 			const function_name = function_name_extract(line);
 
+			const user_description = await get_function_description();
 			const raw_function_arguments = function_arguments_extract(line);
 			const variables_and_descriptions: [string, string][] = await get_variables_to_be_used(raw_function_arguments);
-			const user_description = await get_function_description();
+			const function_output: [string, string][] = await get_variables_to_be_used(return_type);
 
 			// Format Final Comment Block
 			const template_footer_and_header = '// ********************************************************** //';
 			const template_method_name = '// Method name:        ';
 			const template_method_description = '// Method description: ';
 			const template_input_params = '// Input params:       ';
-			const template_output_params = '// Output params:       ';
+			const template_output_params = '// Output params:      ';
 			var comment_block: string = '';
 
 			comment_block += template_footer_and_header + '\n';
@@ -182,7 +183,14 @@ export async function activate(context: vscode.ExtensionContext) {
 			comment_block += template_method_name + full_justify_text(function_name, 0, '  //', '', 0);
 			comment_block += format_description(template_method_description, user_description);
 			comment_block += template_input_params + format_variables(variables_and_descriptions);
+			comment_block += template_output_params + format_variables(function_output);
+			comment_block += template_footer_and_header;
 			console.log(comment_block);
+
+			editor?.edit(TextEditorEdit => {
+				TextEditorEdit.insert(position, comment_block);
+			});
+
 		}
 
 
